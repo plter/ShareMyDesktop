@@ -1,5 +1,6 @@
 {
   "name": "ShareMyDesktop",
+  "description": "Share my desktop",
   "version": "0.0.1",
   "main": "main.html",
   "window": {
