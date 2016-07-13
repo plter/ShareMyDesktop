@@ -1,0 +1,13 @@
+{
+  "name": "ShareMyDesktop",
+  "version": "0.0.1",
+  "main": "main.html",
+  "window": {
+    "width": 720,
+    "height": 550
+  },
+  "dependencies": {
+    "express": "latest",
+    "socket.io": "latest"
+  }
+}
