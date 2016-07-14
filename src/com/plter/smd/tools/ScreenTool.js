@@ -22,8 +22,8 @@
                         mandatory: {
                             chromeMediaSource: 'desktop',
                             chromeMediaSourceId: streamId,
-                            maxWidth: 1920,
-                            maxHeight: 1080
+                            maxWidth: 800,
+                            maxHeight: 500
                         },
                         optional: []
                     };
