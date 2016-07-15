@@ -13,8 +13,6 @@
             this._socket = socket;
             this._log.println(this._socket.conn.remoteAddress + "已连接");
 
-            console.log(socket);
-
             SocketClient.clients.push(this);
 
             this._pc = new RTCPeerConnection(null);

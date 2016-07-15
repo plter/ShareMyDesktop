@@ -42,7 +42,7 @@
             });
             this._jqServer.on(Server.EventTypes.START, ()=> {
                 this._jqSpanServerStatus.html("服务器已经启动在端口" + Config.SERVER_PORT + "上");
-                this.startServerButtonEnabled = false;
+                this.setStartServerButtonEnabled(false);
             });
 
             //server events
@@ -51,7 +51,7 @@
             });
             this._jqServer.on(Server.EventTypes.CLOSE, ()=> {
                 this._jqSpanServerStatus.html("服务器已停止");
-                this.startServerButtonEnabled = true;
+                this.setStartServerButtonEnabled(true);
             });
 
             //screen events
@@ -75,7 +75,7 @@
         /**
          * @param value {Boolean}
          */
-        set startServerButtonEnabled(value) {
+        setStartServerButtonEnabled(value) {
             this._jqBtnStartServer.prop("disabled", !value);
             this._jqBtnStopServer.prop("disabled", value);
         }

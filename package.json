@@ -10,5 +10,9 @@
   "dependencies": {
     "express": "latest",
     "socket.io": "latest"
+  },
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-closure-compiler": "0.0.21"
   }
 }

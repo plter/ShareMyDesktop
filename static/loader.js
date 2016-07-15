@@ -4,14 +4,12 @@
 
 (function () {
 
-    const BASE_DIR = "src/com/plter/smd";
+    const BASE_DIR = "src/com/plter/smd/client";
     var jsFiles = [
         "ns.js",
-        "Config.js",
-        "net/Server.js",
-        "net/SocketClient.js",
-        "tools/Log.js",
-        "tools/ScreenTool.js",
+        "CommandAdapter.js",
+        "net/Socket.js",
+        "net/MediaConnection.js",
         "Main.js"
     ];
 
@@ -20,14 +18,15 @@
     function loadJsFile() {
         var src = BASE_DIR + "/" + jsFiles[index];
 
-        $.getScript(src).done(()=> {
+        $.getScript(src).done(function () {
             index++;
 
             if (index < jsFiles.length) {
                 loadJsFile();
             }
-        }).fail(()=> {
+        }).fail(function (jqxhr, settings, exception) {
             console.error("Can not load js file " + src);
+            console.error(exception);
         });
     }
 

@@ -7,7 +7,6 @@
 
     class ScreenTool {
 
-
         constructor() {
             this._currentStream = null;
             this._jqSelf = $(this);
@@ -16,14 +15,17 @@
         }
 
         chooseToShare() {
+
+            const Config = com.plter.smd.Config;
+
             gui.Screen.chooseDesktopMedia(["window", "screen"],
                 function (streamId) {
                     var vid_constraint = {
                         mandatory: {
                             chromeMediaSource: 'desktop',
                             chromeMediaSourceId: streamId,
-                            maxWidth: 800,
-                            maxHeight: 500
+                            maxWidth: Config.screen.MAX_WIDTH,
+                            maxHeight: Config.screen.MAX_HEIGHT
                         },
                         optional: []
                     };
