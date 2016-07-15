@@ -40,15 +40,23 @@
 
     MediaConnection.prototype.connectPeer = function () {
         this._pc = new com.plter.smd.client.net.PeerConnection(null);
+
         this._pc.onicecandidate = function (e) {
             this.getCommandAdapter().fire(CommandAdapter.Commands.SEND_CANDIDATE_TO_SOCKET_SERVER, e.candidate);
         }.bind(this);
+
         this._pc.oniceconnectionstatechange = function (e) {
             console.log(e);
         };
+
         this._pc.onaddstream = function (event) {
             this.getCommandAdapter().fire(CommandAdapter.Commands.SHOW_REMOTE_VIDEO, event.stream);
         }.bind(this);
+
+        this._pc.onclose = function (event) {
+            console.log(event, "close");
+        };
+
         this._pc.createOffer(offerOptions).then(
             function (desc) {
                 this._pc.setLocalDescription(desc).then(function () {
