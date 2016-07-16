@@ -5,23 +5,41 @@
 
 (function () {
 
-    const Server = com.plter.smd.net.Server;
-    const Config = com.plter.smd.Config;
-    const ScreenTool = com.plter.smd.tools.ScreenTool;
-    const Log = com.plter.smd.tools.Log;
+    const Server = com.plter.smd.server.net.Server;
+    const Config = com.plter.smd.server.Config;
+    const ScreenTool = com.plter.smd.server.tools.ScreenTool;
+    const Commands = com.plter.smd.server.ca.Commands;
 
-    class Main {
+    class Main extends com.plter.smd.share.ca.CommandHandler {
 
         constructor() {
-            this._server = new Server();
+            super(new com.plter.smd.share.ca.CommandAdapter());
+            this.registerCommands();
+
+            this._server = new Server(this.getCommandAdapter());
             this._jqServer = $(this._server);
             this._screenTool = ScreenTool.getInstance();
             this._jqScreenTool = $(this._screenTool);
-            this._jqLog = Log.getInstance().jqSelf;
 
             this.getUI();
             this.addListeners();
         }
+
+        registerCommands() {
+            this.getCommandAdapter().on(Commands.LOG, this.commandHandler.bind(this));
+        }
+
+        commandHandler(cmd, data) {
+            switch (cmd.type) {
+                case Commands.LOG:
+                    this._jqOutput.html(this._jqOutput.html() + data);
+
+                    var output = this._jqOutput[0];
+                    output.scrollTop = output.scrollHeight;
+                    break;
+            }
+        }
+
 
         getUI() {
             this._jqBtnStartServer = $("#btnstartserver");
@@ -62,14 +80,6 @@
             this._jqScreenTool.on(ScreenTool.EventTypes.ERROR, ()=> {
                 this.showDialog("你取消了屏幕共享", "提示");
             });
-
-            //log event
-            this._jqLog.on(Log.EventTypes.PRINT, (event, msg)=> {
-                this._jqOutput.html(this._jqOutput.html() + msg);
-
-                var output = this._jqOutput[0];
-                output.scrollTop = output.scrollHeight;
-            });
         }
 
         /**
@@ -92,5 +102,5 @@
         return Main.__ins;
     };
 
-    com.plter.smd.Main = Main;
+    com.plter.smd.server.Main = Main;
 })();

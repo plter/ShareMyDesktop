@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "grunt": "latest",
-    "grunt-closure-compiler": "0.0.21"
+    "grunt-shell": "^1.3.0",
+    "load-grunt-tasks": "^3.5.0"
   }
 }

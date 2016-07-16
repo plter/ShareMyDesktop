@@ -8,21 +8,23 @@
     const express = require("express");
     const socket = require("socket.io");
 
-    const Config = com.plter.smd.Config;
+    const Config = com.plter.smd.server.Config;
 
-    class Server {
+    class Server extends com.plter.smd.share.ca.CommandHandler {
 
-        constructor() {
+        constructor(ca) {
+            super(ca);
+
             this._running = false;
             this._jqSelf = $(this);
         }
 
-        get running() {
+        isRunning() {
             return this._running;
         }
 
         start() {
-            if (!this.running) {
+            if (!this.isRunning()) {
 
                 //http server
                 this.app = express();
@@ -40,13 +42,13 @@
                 //socket server
                 this._io = socket(this.httpServer);
                 this._io.on("connection", (sock)=> {
-                    new com.plter.smd.net.Client(sock);
+                    new com.plter.smd.server.net.SocketClient(this.getCommandAdapter(), sock);
                 });
             }
         }
 
         stop() {
-            if (this.running) {
+            if (this.isRunning()) {
                 this.httpServer.close(()=> {
                     this._running = false;
                     this._jqSelf.trigger(Server.EventTypes.CLOSE);
@@ -61,5 +63,5 @@
         CLOSE: "close"
     };
 
-    com.plter.smd.net.Server = Server;
+    com.plter.smd.server.net.Server = Server;
 })();

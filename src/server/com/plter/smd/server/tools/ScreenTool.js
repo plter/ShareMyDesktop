@@ -16,7 +16,7 @@
 
         chooseToShare() {
 
-            const Config = com.plter.smd.Config;
+            const Config = com.plter.smd.server.Config;
 
             gui.Screen.chooseDesktopMedia(["window", "screen"],
                 function (streamId) {
@@ -39,7 +39,7 @@
             );
         }
 
-        get currentStream() {
+        getCurrentStream() {
             return this._currentStream;
         }
     }
@@ -54,5 +54,5 @@
         return ScreenTool.__ins;
     };
 
-    com.plter.smd.tools.ScreenTool = ScreenTool;
+    com.plter.smd.server.tools.ScreenTool = ScreenTool;
 })();

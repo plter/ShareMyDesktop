@@ -2,76 +2,94 @@
  * Created by plter on 7/15/16.
  */
 
-var Config = {
-    SERVER_BASE_SRC_DIR: "src/server/com/plter/smd/",
-    CLIENT_BASE_SRC_DIR: "src/client/com/plter/smd/client/",
-    serverJsFiles: [
-        "ns",
-        "Config",
-        "net/Server",
-        "net/SocketClient",
-        "tools/Log",
-        "tools/ScreenTool",
-        "Main"
-    ],
-    clientJsFiles: [
-        "ns",
-        "ca/CommandAdapter",
-        "ca/CommandHandler",
-        "net/MediaConnection",
-        "net/Socket",
-        "Main"
-    ],
-    _initJsFiles: function (srcArray, baseDir) {
-        for (var i = 0; i < srcArray.length; i++) {
-            srcArray[i] = baseDir + srcArray[i] + ".js";
-        }
-    },
-    init: function () {
-        this._initJsFiles(this.serverJsFiles, this.SERVER_BASE_SRC_DIR);
-        this._initJsFiles(this.clientJsFiles, this.CLIENT_BASE_SRC_DIR);
-        return this;
-    }
-}.init();
+var fs = require("fs");
+
+var ClosureCompilerPath = "tools/closure-compiler/build/compiler.jar";
+var ClosureCompilerCommand = `java -jar ${ClosureCompilerPath}`;
+
+var serverInputJsFiles = [
+    "src/ns.js",
+    "src/share/com/plter/smd/share/net/SocketEvents.js",
+    "src/share/com/plter/smd/share/ca/CommandHandler.js",
+    "src/share/com/plter/smd/share/ca/CommandAdapter.js",
+    "src/server/com/plter/smd/server/ca/Commands.js",
+    "src/server/com/plter/smd/server/Config.js",
+    "src/server/com/plter/smd/server/net/MediaStreamClient.js",
+    "src/server/com/plter/smd/server/net/MediaStreamServer.js",
+    "src/server/com/plter/smd/server/net/Server.js",
+    "src/server/com/plter/smd/server/net/SocketClient.js",
+    "src/server/com/plter/smd/server/tools/Log.js",
+    "src/server/com/plter/smd/server/tools/ScreenTool.js",
+    "src/server/com/plter/smd/server/Main.js"
+];
+var serverOutputDir = "build/server/";
+var serverOutputJsFileName = "main.min.js";
+var serverOutputJSFile = `${serverOutputDir}${serverOutputJsFileName}`;
+var serverOutputSourceMapFileName = `${serverOutputJsFileName}.map`;
+var serverOutputSourceMapFile = `${serverOutputDir}${serverOutputSourceMapFileName}`;
+
+var clientInputJsFiles = [
+    "src/ns.js",
+    "src/share/com/plter/smd/share/net/SocketEvents.js",
+    "src/share/com/plter/smd/share/ca/CommandHandler.js",
+    "src/share/com/plter/smd/share/ca/CommandAdapter.js",
+    "src/client/com/plter/smd/client/ca/Commands.js",
+    "src/client/com/plter/smd/client/net/MediaConnection.js",
+    "src/client/com/plter/smd/client/net/Socket.js",
+    "src/client/com/plter/smd/client/Main.js"
+];
+var clientOutputDir = "static/build/client/";
+var clientOutputJsFileName = "index.min.js";
+var clientOutputSourceMapFileName = `${clientOutputJsFileName}.map`;
+var clientOutputJSFile = `${clientOutputDir}${clientOutputJsFileName}`;
+var clientOutputSourceMapFile = `${clientOutputDir}${clientOutputSourceMapFileName}`;
+
+function buildClosureCompilerCommand(input, output, sourceMapFile) {
+    return `${ClosureCompilerCommand} --language_in ES6 --js ${input.join(" ")} --js_output_file ${output} --create_source_map ${sourceMapFile}`;
+}
+
+var compileServerCommand = buildClosureCompilerCommand(serverInputJsFiles, serverOutputJSFile, serverOutputSourceMapFile);
+var compileClientCommand = buildClosureCompilerCommand(clientInputJsFiles, clientOutputJSFile, clientOutputSourceMapFile);
+
+function appendSourceMapInfo(file, sourceMapFileName) {
+    fs.appendFileSync(file, `\n//# sourceMappingURL=${sourceMapFileName}\n`);
+}
 
 
 module.exports = function (grunt) {
 
-    grunt.loadNpmTasks('grunt-closure-compiler');
+    require('load-grunt-tasks')(grunt);
 
     // Project configuration.
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
-        'closure-compiler': {
+        shell: {
             server: {
-                closurePath: 'tools/closure-compiler',
-                js: Config.serverJsFiles,
-                jsOutputFile: 'build/server/main.min.js',
-                options: {
-                    externs: [],
-                    language_in: 'ES6',
-                    language_out: "ES5",
-                    create_source_map: "build/server/main.min.js.map",
-                    output_wrapper: '//# sourceMappingURL=main.min.js.map\n%output%'
-                }
+                command: compileServerCommand
             },
             client: {
-                closurePath: 'tools/closure-compiler',
-                js: Config.clientJsFiles,
-                jsOutputFile: 'static/build/client/index.min.js',
-                options: {
-                    externs: [],
-                    language_in: 'ES6',
-                    language_out: "ES5",
-                    create_source_map: "static/build/client/index.min.js.map",
-                    output_wrapper: '//# sourceMappingURL=index.min.js.map\n%output%'
-                }
+                command: compileClientCommand
             }
         }
     });
 
-    grunt.registerTask("server", 'closure-compiler:server');
-    grunt.registerTask("client", 'closure-compiler:client');
+    grunt.registerTask("appendSourceMapToServerOutputJs", function () {
+        appendSourceMapInfo(serverOutputJSFile, serverOutputSourceMapFileName);
+    });
 
-    grunt.registerTask('default', 'closure-compiler');
+    grunt.registerTask("server", function () {
+        grunt.log.writeln(`Run:\n${compileServerCommand}`);
+        grunt.task.run(["shell:server", "appendSourceMapToServerOutputJs"]);
+    });
+
+    grunt.registerTask("appendSourceMapToClientOutputJs", function () {
+        appendSourceMapInfo(clientOutputJSFile, clientOutputSourceMapFileName);
+    });
+
+    grunt.registerTask("client", function () {
+        grunt.log.write(`Run:\n${compileClientCommand}`);
+        grunt.task.run("shell:client", "appendSourceMapToClientOutputJs");
+    });
+
+    grunt.registerTask('default', ["server", "client"]);
 };
