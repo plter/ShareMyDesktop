@@ -11,10 +11,11 @@
         constructor(ca, socket) {
             super(ca);
 
-            this._server = SocketClient.getServerWithMinCustomers(ca);
-            this._customers = new Map();
-
             this._id = ++SocketClient.__idIndex;
+
+            this._server = SocketClient.getServerWithMinCustomers(ca);
+            this._server.addCustomer(this);
+            this._customers = new Map();
 
             this._socket = socket;
             SocketClient.addClient(this);
@@ -42,7 +43,6 @@
         }
 
         sendCallerDescription(desc, callerSocketClient) {
-            this.addCustomer(callerSocketClient);
             this._socket.emit(SocketEvents.CALLER_SESSION_DESCRIPTION, {
                 desc: desc,
                 callerSocketId: callerSocketClient.getId()

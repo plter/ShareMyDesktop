@@ -15,7 +15,6 @@ var serverInputJsFiles = [
     "src/share/com/plter/smd/share/ca/CommandAdapter.js",
     "src/server/com/plter/smd/server/ca/Commands.js",
     "src/server/com/plter/smd/server/Config.js",
-    "src/server/com/plter/smd/server/net/MediaStreamClient.js",
     "src/server/com/plter/smd/server/net/MediaStreamServer.js",
     "src/server/com/plter/smd/server/net/Server.js",
     "src/server/com/plter/smd/server/net/SocketClient.js",
