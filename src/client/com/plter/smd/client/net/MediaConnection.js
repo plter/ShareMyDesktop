@@ -14,6 +14,8 @@
     class MediaConnection extends com.plter.smd.share.ca.CommandHandler {
         constructor(ca) {
             super(ca);
+
+            this._customers = new Map();
         }
 
         commandHandler(event, data) {
@@ -34,6 +36,12 @@
                     }, function () {
                         console.warn("无法创建远程连接");
                     });
+                    break;
+                case Commands.RECEIVED_CALLERS_SESSION_DESCRIPTION:
+                    this._customers.set(data.callerSocketId, new com.plter.smd.client.net.MediaStreamClient(this.getCommandAdapter(), data.callerSocketId, data.desc));
+                    break;
+                case Commands.RECEIVED_CALLERS_CANDIDATE:
+                    this._customers.get(data.callerSocketId).receivedCallersCandidate(data.callerSocketId, data.candidate);
                     break;
             }
         }

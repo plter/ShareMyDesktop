@@ -4,12 +4,13 @@
 
 var fs = require("fs");
 
-var ClosureCompilerPath = "tools/closure-compiler/build/compiler.jar";
+var ClosureCompilerPath = "tools/closure-compiler-v20160713.jar";
 var ClosureCompilerCommand = `java -jar ${ClosureCompilerPath}`;
 
 var serverInputJsFiles = [
     "src/ns.js",
     "src/share/com/plter/smd/share/net/SocketEvents.js",
+    "src/share/com/plter/smd/share/extensions/Array.js",
     "src/share/com/plter/smd/share/ca/CommandHandler.js",
     "src/share/com/plter/smd/share/ca/CommandAdapter.js",
     "src/server/com/plter/smd/server/ca/Commands.js",
@@ -34,8 +35,10 @@ var clientInputJsFiles = [
     "src/share/com/plter/smd/share/ca/CommandHandler.js",
     "src/share/com/plter/smd/share/ca/CommandAdapter.js",
     "src/client/com/plter/smd/client/ca/Commands.js",
+    "src/client/com/plter/smd/client/ca/CADataKeys.js",
+    "src/client/com/plter/smd/client/net/MediaStreamClient.js",
     "src/client/com/plter/smd/client/net/MediaConnection.js",
-    "src/client/com/plter/smd/client/net/Socket.js",
+    "src/client/com/plter/smd/client/net/SocketConnection.js",
     "src/client/com/plter/smd/client/Main.js"
 ];
 var clientOutputDir = "static/build/client/";

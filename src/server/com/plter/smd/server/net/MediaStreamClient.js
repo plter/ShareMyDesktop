@@ -5,6 +5,12 @@
 
     class MediaStreamClient extends com.plter.smd.share.ca.CommandHandler {
 
+        /**
+         *
+         * @param {CommandAdapter} ca
+         * @param {SocketClient} socketClient
+         * @param desc
+         */
         constructor(ca, socketClient, desc) {
             super(ca);
             this._socketClient = socketClient;

@@ -18,5 +18,9 @@
         }
     }
 
+    /**
+     *
+     * @class {CommandHandler}
+     */
     com.plter.smd.share.ca.CommandHandler = CommandHandler;
 })();

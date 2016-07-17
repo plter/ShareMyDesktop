@@ -11,13 +11,14 @@
         constructor(ca, socket) {
             super(ca);
 
+            this._server = SocketClient.getServerWithMinCustomers(ca);
+            this._customers = new Map();
+
             this._id = ++SocketClient.__idIndex;
 
             this._socket = socket;
-            SocketClient.clients.push(this);
+            SocketClient.addClient(this);
             this.addListeners();
-
-            this._server = SocketClient.getServerWithMinCustomers(ca);
 
             this._log = new com.plter.smd.server.tools.Log(this.getCommandAdapter());
             this._log.println(this._socket.conn.remoteAddress + "已连接");
@@ -28,6 +29,8 @@
             this._socket.on("disconnect", this.socketOnDisconnectHandler.bind(this));
             this._socket.on(SocketEvents.CANDIDATE, this.socketOnCandidateHandler.bind(this));
             this._socket.on("desc", this.socketOnDescHandler.bind(this));
+            this._socket.on(SocketEvents.SEND_SESSION_DESCRIPTION_TO_CALLER, this._sendSessionDescriptionToCallerHandler.bind(this));
+            this._socket.on(SocketEvents.SEND_CANDIDATE_TO_CALLER, this._sendCandidateToCallerHandler.bind(this));
         }
 
         socketOnDescHandler(data) {
@@ -38,30 +41,46 @@
             this.getServer().sendCallerCandidate(candidate, this);
         }
 
-        sendCallerDescription(desc) {
-            this._socket.emit(SocketEvents.CALLER_SESSION_DESCRIPTION, desc);
+        sendCallerDescription(desc, callerSocketClient) {
+            this._socket.emit(SocketEvents.CALLER_SESSION_DESCRIPTION, {
+                desc: desc,
+                callerSocketId: callerSocketClient.getId()
+            });
         }
 
-        sendCallerCandidate(candidate) {
-            this._socket.emit(SocketEvents.CALLER_CANDIDATE, candidate);
+        sendCallerCandidate(candidate, callerSocketClient) {
+            this._socket.emit(SocketEvents.CALLER_CANDIDATE, {
+                candidate: candidate,
+                callerSocketId: callerSocketClient.getId()
+            });
         }
 
         socketOnDisconnectHandler() {
-            var index = SocketClient.clients.indexOf(this);
-            if (index != -1) {
-                SocketClient.clients.splice(index, 1);
-
+            if (SocketClient.removeClient(this)) {
                 this._log.println(this._socket.conn.remoteAddress + "已断开");
             }
+
             //TODO change customer media channel
+        }
+
+        _sendSessionDescriptionToCallerHandler(data) {
+            SocketClient.getClient(data.callerSocketId).getSocket().emit(SocketEvents.SESSION_DESCRIPTION, data.desc);
+        }
+
+        _sendCandidateToCallerHandler(data) {
+            SocketClient.getClient(data.callerSocketId).getSocket().emit(SocketEvents.CANDIDATE, data.candidate);
         }
 
         /**
          *
-         * @returns {Array}
+         * @returns {Map}
          */
-        getCustoms() {
+        getCustomers() {
             return this._customers;
+        }
+
+        getCustomersCount() {
+            return this.getCustomers().size;
         }
 
         getServer() {
@@ -72,22 +91,19 @@
             return this._socket;
         }
 
-
         getId() {
             return this._id;
         }
     }
 
-    SocketClient.clients = [];
+    SocketClient.__clients = new Map();
     SocketClient.getServerWithMinCustomers = function (ca) {
         var c = null;
-        if (SocketClient.clients.length > 1) {
-            c = SocketClient.clients[0];
-
+        if (SocketClient.__clients.size > 0) {
             let current;
-            for (let i = 0; i < SocketClient.clients.length; i++) {
-                current = SocketClient.clients[0];
-                if (current.getCustoms().length < c.getCustoms().length) {
+            for (var key of SocketClient.__clients.keys()) {
+                current = SocketClient.__clients.get(key);
+                if (!c || c.getCustomersCount() > current.getCustomersCount()) {
                     c = current;
                 }
             }
@@ -95,6 +111,29 @@
             c = new com.plter.smd.server.net.MediaStreamServer(ca);
         }
         return c;
+    };
+
+    /**
+     *
+     * @param {SocketClient} socketClient
+     */
+    SocketClient.addClient = function (socketClient) {
+        SocketClient.__clients.set(socketClient.getId(), socketClient);
+    };
+
+    SocketClient.getClient = function (id) {
+        return SocketClient.__clients.get(id);
+    };
+
+    /**
+     *
+     * @param {SocketClient} client
+     * @return {Boolean}
+     */
+    SocketClient.removeClient = function (client) {
+        var result = SocketClient.__clients.has(client.getId());
+        SocketClient.__clients.delete(client.getId());
+        return result;
     };
 
     SocketClient.__idIndex = 0;

@@ -8,6 +8,7 @@
 
         constructor() {
             this._jqSelf = $(this);
+            this._dataMap = new Map();
         }
 
         fire(type, extra) {
@@ -20,6 +21,18 @@
 
         off(type, handler) {
             this._jqSelf.off(type, handler);
+        }
+
+        getData(key) {
+            return this._dataMap.get(key);
+        }
+
+        setData(key, value) {
+            this._dataMap.set(key, value);
+        }
+
+        getDataMap(){
+            return this._dataMap;
         }
     }
 
