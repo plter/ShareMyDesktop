@@ -42,6 +42,7 @@
         }
 
         sendCallerDescription(desc, callerSocketClient) {
+            this.addCustomer(callerSocketClient);
             this._socket.emit(SocketEvents.CALLER_SESSION_DESCRIPTION, {
                 desc: desc,
                 callerSocketId: callerSocketClient.getId()
@@ -64,11 +65,11 @@
         }
 
         _sendSessionDescriptionToCallerHandler(data) {
-            SocketClient.getClient(data.callerSocketId).getSocket().emit(SocketEvents.SESSION_DESCRIPTION, data.desc);
+            this.getCustomerById(data.callerSocketId).getSocket().emit(SocketEvents.SESSION_DESCRIPTION, data.desc);
         }
 
         _sendCandidateToCallerHandler(data) {
-            SocketClient.getClient(data.callerSocketId).getSocket().emit(SocketEvents.CANDIDATE, data.candidate);
+            this.getCustomerById(data.callerSocketId).getSocket().emit(SocketEvents.CANDIDATE, data.candidate);
         }
 
         /**
@@ -77,6 +78,18 @@
          */
         getCustomers() {
             return this._customers;
+        }
+
+        getCustomerById(id) {
+            return this._customers.get(id);
+        }
+
+        addCustomer(socketClient) {
+            this._customers.set(socketClient.getId(), socketClient);
+        }
+
+        removeCustomer(socketClient) {
+            this._customers.delete(socketClient.getId());
         }
 
         getCustomersCount() {
