@@ -2,10 +2,8 @@
  * Created by plter on 7/16/16.
  */
 
-(function () {
+var Commands = {
+    LOG: "log"
+};
 
-    com.plter.smd.server.ca.Commands = {
-        LOG: "log"
-    }
-
-})();
+export default Commands;

@@ -2,25 +2,18 @@
  * Created by plter on 7/15/16.
  */
 
-(function () {
+class CommandHandler {
 
-    class CommandHandler {
-
-        constructor(ca) {
-            this._ca = ca;
-        }
-
-        getCommandAdapter() {
-            return this._ca;
-        }
-
-        commandHandler(cmd, data) {
-        }
+    constructor(ca) {
+        this._ca = ca;
     }
 
-    /**
-     *
-     * @class {CommandHandler}
-     */
-    com.plter.smd.share.ca.CommandHandler = CommandHandler;
-})();
+    getCommandAdapter() {
+        return this._ca;
+    }
+
+    commandHandler(cmd, data) {
+    }
+}
+
+export default CommandHandler;

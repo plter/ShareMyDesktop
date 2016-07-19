@@ -4,43 +4,43 @@
 
 var fs = require("fs");
 
-var ClosureCompilerPath = "tools/closure-compiler-v20160713.jar";
+
+var ClosureCompilerPath = `${__dirname}/tools/closure-compiler-v20160713.jar`;
 var ClosureCompilerCommand = `java -jar ${ClosureCompilerPath}`;
+const classPath = "src";
 
 var serverInputJsFiles = [
-    "src/ns.js",
-    "src/share/com/plter/smd/share/net/SocketEvents.js",
-    "src/share/com/plter/smd/share/extensions/Array.js",
-    "src/share/com/plter/smd/share/ca/CommandHandler.js",
-    "src/share/com/plter/smd/share/ca/CommandAdapter.js",
-    "src/server/com/plter/smd/server/ca/Commands.js",
-    "src/server/com/plter/smd/server/Config.js",
-    "src/server/com/plter/smd/server/net/MediaStreamServer.js",
-    "src/server/com/plter/smd/server/net/Server.js",
-    "src/server/com/plter/smd/server/net/SocketClient.js",
-    "src/server/com/plter/smd/server/tools/Log.js",
-    "src/server/com/plter/smd/server/tools/ScreenTool.js",
-    "src/server/com/plter/smd/server/Main.js"
+    "share/com/plter/smd/share/net/SocketEvents.js",
+    "share/com/plter/smd/share/extensions/Array.js",
+    "share/com/plter/smd/share/ca/CommandHandler.js",
+    "share/com/plter/smd/share/ca/CommandAdapter.js",
+    "server/com/plter/smd/server/ca/Commands.js",
+    "server/com/plter/smd/server/Config.js",
+    "server/com/plter/smd/server/net/MediaStreamServer.js",
+    "server/com/plter/smd/server/net/Server.js",
+    "server/com/plter/smd/server/net/SocketClient.js",
+    "server/com/plter/smd/server/tools/Log.js",
+    "server/com/plter/smd/server/tools/ScreenTool.js",
+    "server/com/plter/smd/server/Main.js"
 ];
-var serverOutputDir = "build/server/";
+var serverOutputDir = `${__dirname}/build/server/`;
 var serverOutputJsFileName = "main.min.js";
 var serverOutputJSFile = `${serverOutputDir}${serverOutputJsFileName}`;
 var serverOutputSourceMapFileName = `${serverOutputJsFileName}.map`;
 var serverOutputSourceMapFile = `${serverOutputDir}${serverOutputSourceMapFileName}`;
 
 var clientInputJsFiles = [
-    "src/ns.js",
-    "src/share/com/plter/smd/share/net/SocketEvents.js",
-    "src/share/com/plter/smd/share/ca/CommandHandler.js",
-    "src/share/com/plter/smd/share/ca/CommandAdapter.js",
-    "src/client/com/plter/smd/client/ca/Commands.js",
-    "src/client/com/plter/smd/client/ca/CADataKeys.js",
-    "src/client/com/plter/smd/client/net/MediaStreamClient.js",
-    "src/client/com/plter/smd/client/net/MediaConnection.js",
-    "src/client/com/plter/smd/client/net/SocketConnection.js",
-    "src/client/com/plter/smd/client/Main.js"
+    "share/com/plter/smd/share/net/SocketEvents.js",
+    "share/com/plter/smd/share/ca/CommandHandler.js",
+    "share/com/plter/smd/share/ca/CommandAdapter.js",
+    "client/com/plter/smd/client/ca/Commands.js",
+    "client/com/plter/smd/client/ca/CADataKeys.js",
+    "client/com/plter/smd/client/net/MediaStreamClient.js",
+    "client/com/plter/smd/client/net/MediaConnection.js",
+    "client/com/plter/smd/client/net/SocketConnection.js",
+    "client/com/plter/smd/client/Main.js"
 ];
-var clientOutputDir = "static/build/client/";
+var clientOutputDir = `${__dirname}/static/build/client/`;
 var clientOutputJsFileName = "index.min.js";
 var clientOutputSourceMapFileName = `${clientOutputJsFileName}.map`;
 var clientOutputJSFile = `${clientOutputDir}${clientOutputJsFileName}`;
@@ -71,6 +71,11 @@ module.exports = function (grunt) {
             },
             client: {
                 command: compileClientCommand
+            },
+            options: {
+                execOptions: {
+                    cwd: classPath
+                }
             }
         }
     });

@@ -2,66 +2,65 @@
  * Created by plter on 7/13/16.
  */
 
-(()=> {
+const http = require("http");
+const express = require("express");
+const socket = require("socket.io");
 
-    const http = require("http");
-    const express = require("express");
-    const socket = require("socket.io");
+import Config from "server/com/plter/smd/server/Config"
+import CommandHandler from "share/com/plter/smd/share/ca/CommandHandler"
+import SocketClient from "server/com/plter/smd/server/net/SocketClient"
 
-    const Config = com.plter.smd.server.Config;
+class Server extends CommandHandler {
 
-    class Server extends com.plter.smd.share.ca.CommandHandler {
+    constructor(ca) {
+        super(ca);
 
-        constructor(ca) {
-            super(ca);
+        this._running = false;
+        this._jqSelf = $(this);
+    }
 
-            this._running = false;
-            this._jqSelf = $(this);
-        }
+    isRunning() {
+        return this._running;
+    }
 
-        isRunning() {
-            return this._running;
-        }
+    start() {
+        if (!this.isRunning()) {
 
-        start() {
-            if (!this.isRunning()) {
+            //http server
+            this.app = express();
+            this.httpServer = http.createServer(this.app);
+            this.httpServer.listen(Config.SERVER_PORT, ()=> {
+                this._running = true;
+                this._jqSelf.trigger(Server.EventTypes.START);
+            });
+            this.httpServer.on("error", ()=> {
+                this._jqSelf.trigger(Server.EventTypes.ERROR);
+            });
 
-                //http server
-                this.app = express();
-                this.httpServer = http.createServer(this.app);
-                this.httpServer.listen(Config.SERVER_PORT, ()=> {
-                    this._running = true;
-                    this._jqSelf.trigger(Server.EventTypes.START);
-                });
-                this.httpServer.on("error", ()=> {
-                    this._jqSelf.trigger(Server.EventTypes.ERROR);
-                });
+            this.app.use(express.static("./static"));
 
-                this.app.use(express.static("./static"));
-
-                //socket server
-                this._io = socket(this.httpServer);
-                this._io.on("connection", (sock)=> {
-                    new com.plter.smd.server.net.SocketClient(this.getCommandAdapter(), sock);
-                });
-            }
-        }
-
-        stop() {
-            if (this.isRunning()) {
-                this.httpServer.close(()=> {
-                    this._running = false;
-                    this._jqSelf.trigger(Server.EventTypes.CLOSE);
-                });
-            }
+            //socket server
+            this._io = socket(this.httpServer);
+            this._io.on("connection", (sock)=> {
+                new SocketClient(this.getCommandAdapter(), sock);
+            });
         }
     }
 
-    Server.EventTypes = {
-        START: "start",
-        ERROR: "error",
-        CLOSE: "close"
-    };
+    stop() {
+        if (this.isRunning()) {
+            this.httpServer.close(()=> {
+                this._running = false;
+                this._jqSelf.trigger(Server.EventTypes.CLOSE);
+            });
+        }
+    }
+}
 
-    com.plter.smd.server.net.Server = Server;
-})();
+Server.EventTypes = {
+    START: "start",
+    ERROR: "error",
+    CLOSE: "close"
+};
+
+export default Server
