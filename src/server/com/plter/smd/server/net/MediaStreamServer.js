@@ -58,6 +58,14 @@ class MediaStreamServer extends CommandHandler {
     addCustomer(socketClient) {
         this._socketClient = socketClient;
     }
+
+    removeCustomer(socketClient) {
+        this._socketClient = null;
+    }
+
+    getRemoteAddress() {
+        return "Root media server";
+    }
 }
 
 export default MediaStreamServer;

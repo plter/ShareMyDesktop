@@ -8,7 +8,8 @@ var SocketEvents = {
     CANDIDATE: "candidate",
     SESSION_DESCRIPTION: "desc",
     SEND_SESSION_DESCRIPTION_TO_CALLER: "sendSessionDescriptionToCaller",
-    SEND_CANDIDATE_TO_CALLER: "sendCandidateToCaller"
+    SEND_CANDIDATE_TO_CALLER: "sendCandidateToCaller",
+    NEED_RECALL: "needRecall"
 };
 
 export default SocketEvents;

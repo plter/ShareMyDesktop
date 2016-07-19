@@ -6,3 +6,4 @@
 | sendCandidateToCaller | 向呼叫者发送 RTCIceCandidate |
 | desc | 发送 RTCSessionDescription对象 |
 | candidate | 发送 RTCIceCandidate 对象 |
+| needRecall | 向断开连接的终端发送重连通知 |

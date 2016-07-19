@@ -15,8 +15,6 @@ class SocketClient extends CommandHandler {
 
         this._id = ++SocketClient.__idIndex;
 
-        this._server = SocketClient.getServerWithMinCustomers(ca);
-        this._server.addCustomer(this);
         this._customers = new Map();
 
         this._socket = socket;
@@ -24,27 +22,33 @@ class SocketClient extends CommandHandler {
         this.addListeners();
 
         this._log = new Log(this.getCommandAdapter());
-        this._log.println(this._socket.conn.remoteAddress + "已连接");
+        this._log.println(this.getRemoteAddress() + "已连接 >>>>>>>>");
     }
 
     addListeners() {
         //socket events
         this._socket.on("disconnect", this.socketOnDisconnectHandler.bind(this));
         this._socket.on(SocketEvents.CANDIDATE, this.socketOnCandidateHandler.bind(this));
-        this._socket.on("desc", this.socketOnDescHandler.bind(this));
+        this._socket.on(SocketEvents.SESSION_DESCRIPTION, this.socketOnDescHandler.bind(this));
         this._socket.on(SocketEvents.SEND_SESSION_DESCRIPTION_TO_CALLER, this._sendSessionDescriptionToCallerHandler.bind(this));
         this._socket.on(SocketEvents.SEND_CANDIDATE_TO_CALLER, this._sendCandidateToCallerHandler.bind(this));
     }
 
     socketOnDescHandler(data) {
-        this.getServer().sendCallerDescription(data, this);
+        this._log.println(`收到呼叫请求来自:${this.getRemoteAddress()}`);
+        this._server = SocketClient.getServerWithMinCustomers(this.getCommandAdapter(), this);
+        this._log.println(`为${this.getRemoteAddress()}设置服务器为${this._server.getRemoteAddress()}`);
+        this._server.addCustomer(this);
+        this._server.sendCallerDescription(data, this);
     }
 
     socketOnCandidateHandler(candidate) {
+        this._log.println(`收到IceCandidate信息来自:${this.getRemoteAddress()}`);
         this.getServer().sendCallerCandidate(candidate, this);
     }
 
     sendCallerDescription(desc, callerSocketClient) {
+        this._log.println(`向${this.getRemoteAddress()}转发来自${callerSocketClient.getRemoteAddress()}的呼叫请求`);
         this._socket.emit(SocketEvents.CALLER_SESSION_DESCRIPTION, {
             desc: desc,
             callerSocketId: callerSocketClient.getId()
@@ -52,6 +56,7 @@ class SocketClient extends CommandHandler {
     }
 
     sendCallerCandidate(candidate, callerSocketClient) {
+        this._log.println(`向${this.getRemoteAddress()}转发来自${callerSocketClient.getRemoteAddress()}的IceCandidate信息`);
         this._socket.emit(SocketEvents.CALLER_CANDIDATE, {
             candidate: candidate,
             callerSocketId: callerSocketClient.getId()
@@ -60,18 +65,31 @@ class SocketClient extends CommandHandler {
 
     socketOnDisconnectHandler() {
         if (SocketClient.removeClient(this)) {
-            this._log.println(this._socket.conn.remoteAddress + "已断开");
+            if (this.getServer()) {
+                this.getServer().removeCustomer(this);
+            }
+            this._log.println(`向${this.getRemoteAddress()}的所有客户机发送重连命令`);
+            this.emitToCustomers(SocketEvents.NEED_RECALL, "");
+            this._log.println(this.getRemoteAddress() + "已断开 <<<<<<<<");
         }
+    }
 
-        //TODO change customer media channel
+    emitToCustomers(type, data) {
+        for (let key of this.getCustomers().keys()) {
+            this.getCustomers().get(key).getSocket().emit(type, data);
+        }
     }
 
     _sendSessionDescriptionToCallerHandler(data) {
-        this.getCustomerById(data.callerSocketId).getSocket().emit(SocketEvents.SESSION_DESCRIPTION, data.desc);
+        let targetSc = this.getCustomerById(data.callerSocketId);
+        this._log.println(`向${targetSc.getRemoteAddress()}转发来自${this.getRemoteAddress()}的请求应答`);
+        targetSc.getSocket().emit(SocketEvents.SESSION_DESCRIPTION, data.desc);
     }
 
     _sendCandidateToCallerHandler(data) {
-        this.getCustomerById(data.callerSocketId).getSocket().emit(SocketEvents.CANDIDATE, data.candidate);
+        let targetSc = this.getCustomerById(data.callerSocketId);
+        this._log.println(`向${targetSc.getRemoteAddress()}转发来自${this.getRemoteAddress()}的应答IceCandidate信息`);
+        targetSc.getSocket().emit(SocketEvents.CANDIDATE, data.candidate);
     }
 
     /**
@@ -106,23 +124,30 @@ class SocketClient extends CommandHandler {
         return this._socket;
     }
 
+    getRemoteAddress() {
+        return this.getSocket().conn.remoteAddress;
+    }
+
     getId() {
         return this._id;
     }
 }
 
 SocketClient.__clients = new Map();
-SocketClient.getServerWithMinCustomers = function (ca) {
+SocketClient.getServerWithMinCustomers = function (ca, except) {
     var c = null;
     if (SocketClient.__clients.size > 0) {
         let current;
         for (var key of SocketClient.__clients.keys()) {
             current = SocketClient.__clients.get(key);
-            if (!c || c.getCustomersCount() > current.getCustomersCount()) {
-                c = current;
+            if (current != except) {
+                if (!c || c.getCustomersCount() > current.getCustomersCount()) {
+                    c = current;
+                }
             }
         }
-    } else {
+    }
+    if (!c) {
         c = new MediaStreamServer(ca);
     }
     return c;

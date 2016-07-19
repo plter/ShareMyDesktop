@@ -51,7 +51,10 @@ class SocketConnection extends CommandHandler {
         });
         this._socket.on(SocketEvents.CALLER_CANDIDATE, (data)=> {
             this.getCommandAdapter().fire(Commands.RECEIVED_CALLERS_CANDIDATE, data);
-        })
+        });
+        this._socket.on(SocketEvents.NEED_RECALL, ()=> {
+            this.getCommandAdapter().fire(Commands.CONNECT_PEER);
+        });
     }
 }
 
